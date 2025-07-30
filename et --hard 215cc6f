@@ -1,0 +1,16 @@
+[33me0332a9[m[33m ([m[1;36mHEAD[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: pull origin main --rebase (start): checkout e0332a96f8aa4076980a8d1367ca92310ce2858b
+[33m215cc6f[m[33m ([m[1;32mmain[m[33m)[m HEAD@{1}: checkout: moving from refactor/admin-newTask to main
+[33md6fa6d3[m[33m ([m[1;32mrefactor/admin-newTask[m[33m)[m HEAD@{2}: commit: first commit
+[33m215cc6f[m[33m ([m[1;32mmain[m[33m)[m HEAD@{3}: checkout: moving from refactor/admin-newTask to refactor/admin-newTask
+[33m215cc6f[m[33m ([m[1;32mmain[m[33m)[m HEAD@{4}: checkout: moving from main to refactor/admin-newTask
+[33m215cc6f[m[33m ([m[1;32mmain[m[33m)[m HEAD@{5}: pull origin refactor/admin-newTask: Fast-forward
+[33m54c83e3[m HEAD@{6}: pull origin refactor/admin-newTask: Fast-forward
+[33m62f60cf[m HEAD@{7}: pull origin refactor/admin-newTask: Fast-forward
+[33me0ab908[m HEAD@{8}: pull origin main: Fast-forward
+[33ma458347[m HEAD@{9}: pull origin feature/admin-overview: Fast-forward
+[33mfe6527e[m HEAD@{10}: pull origin feature/admin-overview: Fast-forward
+[33m0392ded[m HEAD@{11}: pull origin feature/admin-overview: Fast-forward
+[33mdbcd1ac[m HEAD@{12}: pull origin main: Fast-forward
+[33ma5a7e64[m HEAD@{13}: pull origin feature/operator: Fast-forward
+[33me9227f9[m HEAD@{14}: pull origin refactor/auth: Fast-forward
+[33m724e410[m HEAD@{15}: clone: from https://github.com/Ashutosh-pw-ioi/AdminTaskManagement-backend.git

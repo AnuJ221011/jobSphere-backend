@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GradeType {
+  GPA
+  Percentage
+  CGPA
+}
+
+enum QuestionLevel {
+  EASY
+  MEDIUM
+  HIGH
+}
+
+enum PlatformName {
+  leetcode
+  codeforces
+  geeksforgeeks
+}
+
+enum GenderType{
+  MALE
+  FEMALE
+}
+
+model Student {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  password        String
+  gender          GenderType
+  techlioId       String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  platformLinks   PlatformLink[]
+  socialLinks     SocialLink[]
+  workExperiences WorkExperience[]
+  achievements    Achievement[]
+  educations      Education[]
+
+  @@map("students")
+}
+
+model PlatformLink {
+  id        String       @id @default(uuid())
+  platform  PlatformName
+  url       String
+  student   Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
+  @@map("platform_links")
+}
+
+model SocialLink {
+  id        String   @id @default(uuid())
+  platform  String   // e.g. instagram, linkedin, github, twitter, resume
+  url       String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
+  @@map("social_links")
+}
+
+model WorkExperience {
+  id               String   @id @default(uuid())
+  company          String
+  role             String
+  description      String?
+  fromMonth        Int
+  fromYear         Int
+  toMonth          Int?
+  toYear           Int?
+  currentlyWorking Boolean @default(false)
+
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
+  @@map("work_experiences")
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  link        String
+  issueMonth  Int
+  issueYear   Int
+
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
+  @@map("achievements")
+}
+
+model Education {
+  id               String     @id @default(uuid())
+  degree           String
+  collegeName      String
+  gradeType        GradeType
+  GPA              Int?
+  Percentage       Int?
+  CGPA             Int?
+  fromMonth        Int
+  fromYear         Int
+  toMonth          Int?
+  toYear           Int?
+  currentlyWorking Boolean    @default(false)
+
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
+  @@map("educations")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notes     Note[]
+  questions Question[]
+
+  @@map("admins")
+}
+
+model Note {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  link        String
+
+  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  adminId String
+
+  @@map("notes")
+}
+
+model Question {
+  id        String        @id @default(uuid())
+  title     String
+  level     QuestionLevel
+  url       String
+  admin     Admin         @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  adminId   String
+
+  customTags CustomTag[]  @relation("QuestionCustomTags")
+  topics     Topic[]      @relation("QuestionTopics")
+
+  @@map("questions")
+}
+
+model CustomTag {
+  id         String     @id @default(uuid())
+  name       String
+  questions  Question[] @relation("QuestionCustomTags")
+
+  @@map("custom_tags")
+}
+
+model Topic {
+  id         String     @id @default(uuid())
+  name       String
+  questions  Question[] @relation("QuestionTopics")
+
+  @@map("topics")
+}

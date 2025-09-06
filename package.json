@@ -2,11 +2,12 @@
   "name": "admintaskmanagement-backend",
   "version": "1.0.0",
   "description": "This is the end to end backend Repo for AdminTaskManagement",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc -b",
     "start": "node dist/index.js",
-    "dev": "npm run build && npm run start"
+    "dev": "npm run build && npm run start",
+    "dev:watch": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm src/index.ts\""
   },
   "repository": {
     "type": "git",
@@ -39,11 +40,16 @@
   "dependencies": {
     "@prisma/client": "^6.12.0",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "google-auth-library": "^10.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0",
+    "nodemon": "^3.1.10",
+    "zod": "^4.1.5"
   }
 }

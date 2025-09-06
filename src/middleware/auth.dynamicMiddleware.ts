@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { authAdmin,authStudent } from "./auth.middleware.js";
+import { authEmployer,authJobSeeker } from "./auth.middleware.js";
 
 interface JwtPayload {
   emailId: string;
-  role: "ADMIN" | "STUDENT";
+  role: "EMPLOYER" | "JOB_SEEKER";
 }
 
 export const authDynamic = async (req: Request, res: Response, next: NextFunction) => {
@@ -19,10 +19,10 @@ export const authDynamic = async (req: Request, res: Response, next: NextFunctio
       token,
       process.env.JWT_SECRET || "defaultsecret123"
     ) as JwtPayload;
-    if (decoded.role.toUpperCase() === "ADMIN") {
-      return authAdmin(req, res, next);
-    } else if (decoded.role.toUpperCase() === "STUDENT") {
-      return authStudent(req, res, next);
+    if (decoded.role.toUpperCase() === "EMPLOYER") {
+      return authEmployer(req, res, next);
+    } else if (decoded.role.toUpperCase() === "JOB_SEEKER") {
+      return authJobSeeker(req, res, next);
     } else {
       return res.status(403).json({ message: "Access denied. Invalid role." });
     }

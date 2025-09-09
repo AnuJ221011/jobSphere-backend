@@ -22,6 +22,9 @@ declare global {
         phone?: string;
         location?: string;
         profilePicture?: string;
+        employerId?: number; // Add employerId for employer users
+        jobSeekerId?: number; // Add jobSeekerId for job seeker users
+        companyId?: number; // Add companyId for employer users
       };
     }
   }
@@ -30,7 +33,6 @@ declare global {
 // General authentication middleware
 const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Check for token in Authorization header first, then cookies
     let token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
@@ -49,7 +51,6 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
       process.env.JWT_SECRET || "defaultsecret123"
     ) as JwtPayload;
 
-    // Find user in database
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { 
@@ -70,7 +71,6 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
       });
     }
 
-    // Verify role matches token
     if (user.role !== decoded.role) {
       return res.status(401).json({ 
         success: false,
@@ -98,10 +98,9 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-// Employer-specific authentication middleware
+// Updated Employer-specific authentication middleware
 const authEmployer = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Check for token in Authorization header first, then cookies
     let token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
@@ -127,7 +126,7 @@ const authEmployer = async (req: Request, res: Response, next: NextFunction) => 
       });
     }
 
-    // Find user and include employer profile
+    // Updated to match simplified schema structure
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { 
@@ -141,10 +140,17 @@ const authEmployer = async (req: Request, res: Response, next: NextFunction) => 
         employer: {
           select: {
             id: true,
-            companyName: true,
-            companyUrl: true,
-            companySize: true,
-            industry: true
+            companyId: true,
+            jobTitle: true,
+            department: true,
+            role: true,
+            company: {
+              select: {
+                id: true,
+                name: true,
+                industry: true
+              }
+            }
           }
         }
       }
@@ -164,7 +170,11 @@ const authEmployer = async (req: Request, res: Response, next: NextFunction) => 
       });
     }
 
-    req.user = user as {
+    req.user = {
+      ...user,
+      employerId: user.employer?.id,
+      companyId: user.employer?.companyId || undefined,
+    } as {
       id: number;
       email: string;
       name: string;
@@ -172,6 +182,8 @@ const authEmployer = async (req: Request, res: Response, next: NextFunction) => 
       phone?: string;
       location?: string;
       profilePicture?: string;
+      employerId?: number;
+      companyId?: number;
     };
     next();
 
@@ -184,10 +196,9 @@ const authEmployer = async (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-// Job seeker-specific authentication middleware
+// Updated Job seeker-specific authentication middleware
 const authJobSeeker = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Check for token in Authorization header first, then cookies
     let token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
@@ -213,7 +224,6 @@ const authJobSeeker = async (req: Request, res: Response, next: NextFunction) =>
       });
     }
 
-    // Find user and include job seeker profile
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { 
@@ -250,7 +260,10 @@ const authJobSeeker = async (req: Request, res: Response, next: NextFunction) =>
       });
     }
 
-    req.user = user as {
+    req.user = {
+      ...user,
+      jobSeekerId: user.jobSeeker?.id,
+    } as {
       id: number;
       email: string;
       name: string;
@@ -258,6 +271,7 @@ const authJobSeeker = async (req: Request, res: Response, next: NextFunction) =>
       phone?: string;
       location?: string;
       profilePicture?: string;
+      jobSeekerId?: number;
     };
     next();
 
@@ -294,7 +308,6 @@ const checkRole = (allowedRoles: ("JOB_SEEKER" | "EMPLOYER")[]) => {
 // Optional authentication - doesn't fail if no token provided
 const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Check for token in Authorization header first, then cookies
     let token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
@@ -302,7 +315,6 @@ const optionalAuth = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     if (!token) {
-      // No token provided, continue without user
       return next();
     }
 
@@ -311,7 +323,6 @@ const optionalAuth = async (req: Request, res: Response, next: NextFunction) => 
       process.env.JWT_SECRET || "defaultsecret123"
     ) as JwtPayload;
 
-    // Find user in database
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { 
@@ -340,13 +351,12 @@ const optionalAuth = async (req: Request, res: Response, next: NextFunction) => 
     next();
 
   } catch (error) {
-    // Invalid token, but continue without user
     console.error("Optional authentication error:", error);
     next();
   }
 };
 
-// Middleware to ensure user has completed their profile
+// Updated middleware to ensure user has completed their profile
 const requireCompleteProfile = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
     return res.status(401).json({
@@ -390,11 +400,126 @@ const requireCompleteProfile = async (req: Request, res: Response, next: NextFun
   }
 };
 
+// UPDATED: Middleware to ensure employer has company association
+const requireCompany = async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication required"
+    });
+  }
+
+  try {
+    if (req.user.role !== "EMPLOYER") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied: Only employers can access company resources"
+      });
+    }
+
+    const employer = await prisma.employer.findUnique({
+      where: { userId: req.user.id },
+      select: {
+        id: true,
+        companyId: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+            isActive: true
+          }
+        }
+      }
+    });
+
+    if (!employer) {
+      return res.status(400).json({
+        success: false,
+        message: "Please complete your employer profile first"
+      });
+    }
+
+    // Check if employer has company association
+    if (!employer.companyId || !employer.company) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select or create a company profile first",
+        action: "company_required"
+      });
+    }
+
+    // Check if company is active
+    if (!employer.company.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Your company profile is inactive"
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Company check error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+// REMOVED: checkCompanyOwnership and checkJobOwnership 
+// (simplified - if employer has companyId, they can access)
+
+// NEW: Middleware to check if employer owns a specific job
+const checkJobOwnership = async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user || req.user.role !== "EMPLOYER") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied: Only employers can access job resources"
+    });
+  }
+
+  try {
+    const jobId = parseInt(req.params.jobId || req.params.id);
+    
+    if (!jobId) {
+      return res.status(400).json({
+        success: false,
+        message: "Job ID is required"
+      });
+    }
+
+    const job = await prisma.job.findFirst({
+      where: {
+        id: jobId,
+        employerId: req.user.employerId
+      },
+      select: { id: true }
+    });
+
+    if (!job) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied: You don't own this job or job not found"
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Job ownership check error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
 export { 
   authenticate, 
   authEmployer, 
   authJobSeeker, 
   checkRole, 
   optionalAuth,
-  requireCompleteProfile 
+  requireCompleteProfile,
+  requireCompany,
+  checkJobOwnership
 };

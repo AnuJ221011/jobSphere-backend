@@ -1,45 +1,36 @@
-import { Router } from "express";
-import {
-  createEmployer,
-  getEmployer,
-  updateEmployer,
-  deleteEmployer,
-  getEmployerJobs,
-  createJob,
-  updateJob,
-  deleteJob,
-  getJobApplications,
-  updateApplicationStatus,
+import express from "express";
+import { 
+  updateUserBasicDetails,
+  createEmployerProfile, 
+  getEmployerProfile, 
+  updateEmployerProfile, 
+  deleteEmployerAccount,
   getEmployerStats,
+  updateEmployerSettings,
+  checkProfileStatus
 } from "../controller/employer.controller.js";
-
 import { 
   authEmployer, 
-  requireCompleteProfile 
+  authenticate,
+  requireCompany
 } from "../middleware/auth.middleware.js";
 
-const router = Router();
+const router = express.Router();
 
+// Profile Setup Steps
+router.get("/profile-status", authenticate, checkProfileStatus);
+router.put("/basic-details", authenticate, updateUserBasicDetails); // Step 1
+router.post("/profile", authenticate, createEmployerProfile);        // Step 2
 
-router.use(authEmployer, requireCompleteProfile);
+// Profile Management
+router.get("/profile", authEmployer, getEmployerProfile);
+router.put("/profile", authEmployer, updateEmployerProfile);
+router.delete("/account", authEmployer, deleteEmployerAccount);
 
-// ---------------- Employer profile routes ----------------
-router.post("/", createEmployer);          // Create employer profile
-router.get("/:id", getEmployer);           // Get employer by id
-router.put("/:id", updateEmployer);        // Update employer profile
-router.delete("/:id", deleteEmployer);     // Delete employer profile
+// Dashboard & Statistics
+router.get("/stats", authEmployer, requireCompany, getEmployerStats);
 
-// ---------------- Employer statistics ----------------
-router.get("/:id/stats", getEmployerStats);
-
-// ---------------- Job management routes ----------------
-router.get("/:id/jobs", getEmployerJobs);                       // Get all jobs for employer
-router.post("/:id/jobs", createJob);                            // Create a job
-router.put("/:employerId/jobs/:jobId", updateJob);              // Update a job
-router.delete("/:employerId/jobs/:jobId", deleteJob);           // Delete a job
-
-// ---------------- Application management routes ----------------
-router.get("/:employerId/jobs/:jobId/applications", getJobApplications);  // See applicants
-router.patch("/:employerId/applications/:applicationId/status", updateApplicationStatus); // Update application status
+// Settings
+router.put("/settings", authEmployer, updateEmployerSettings);
 
 export default router;

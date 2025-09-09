@@ -2,13 +2,19 @@
 CREATE TYPE "Role" AS ENUM ('JOB_SEEKER', 'EMPLOYER');
 
 -- CreateEnum
+CREATE TYPE "CompanySize" AS ENUM ('STARTUP_1_10', 'SMALL_11_50', 'MEDIUM_51_200', 'LARGE_201_1000', 'ENTERPRISE_1000_PLUS');
+
+-- CreateEnum
+CREATE TYPE "JobStatus" AS ENUM ('ACTIVE', 'COMPLETED', 'PAUSED');
+
+-- CreateEnum
 CREATE TYPE "JobRole" AS ENUM ('SOFTWARE_ENGINEER', 'BACKEND_DEVELOPER', 'FRONTEND_DEVELOPER', 'FULLSTACK_DEVELOPER', 'DATA_SCIENTIST', 'DATA_ANALYST', 'DEVOPS_ENGINEER', 'CLOUD_ENGINEER', 'ML_ENGINEER', 'AI_ENGINEER', 'MOBILE_DEVELOPER', 'ANDROID_DEVELOPER', 'IOS_DEVELOPER', 'UI_UX_DESIGNER', 'PRODUCT_MANAGER', 'PROJECT_MANAGER', 'BUSINESS_ANALYST', 'QA_ENGINEER', 'TEST_AUTOMATION_ENGINEER', 'CYBERSECURITY_ANALYST', 'NETWORK_ENGINEER', 'SYSTEM_ADMIN', 'DATABASE_ADMIN', 'BLOCKCHAIN_DEVELOPER', 'GAME_DEVELOPER', 'TECH_SUPPORT', 'CONTENT_WRITER', 'DIGITAL_MARKETER', 'SALES_ASSOCIATE', 'HR_MANAGER');
 
 -- CreateEnum
 CREATE TYPE "JobType" AS ENUM ('FULL_TIME', 'PART_TIME', 'INTERNSHIP', 'CONTRACT');
 
 -- CreateEnum
-CREATE TYPE "FieldType" AS ENUM ('TEXT', 'NUMBER', 'EMAIL', 'PHONE', 'LOCATION', 'RESUME_URL', 'TEXTAREA', 'SELECT', 'MULTISELECT', 'CHECKBOX', 'DATE');
+CREATE TYPE "FieldType" AS ENUM ('TEXT', 'NUMBER', 'EMAIL', 'PHONE', 'LOCATION', 'RESUME_URL', 'TEXTAREA', 'SELECT', 'MULTISELECT', 'CHECKBOX', 'DATE', 'YEARS_OF_EXPERIENCE');
 
 -- CreateEnum
 CREATE TYPE "ApplicationStatus" AS ENUM ('PENDING', 'REVIEWING', 'SHORTLISTED', 'INTERVIEWED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN');
@@ -18,6 +24,7 @@ CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
     "phone" TEXT,
     "location" TEXT,
     "profilePicture" TEXT,
@@ -46,14 +53,29 @@ CREATE TABLE "JobSeeker" (
 CREATE TABLE "Employer" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
-    "companyName" TEXT NOT NULL,
-    "companyUrl" TEXT,
-    "companySize" TEXT,
-    "industry" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Employer_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Company" (
+    "id" SERIAL NOT NULL,
+    "employerId" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "website" TEXT,
+    "profilePicture" TEXT,
+    "size" "CompanySize",
+    "industry" TEXT,
+    "location" TEXT,
+    "foundedYear" INTEGER,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -120,7 +142,7 @@ CREATE TABLE "Preferences" (
 -- CreateTable
 CREATE TABLE "Job" (
     "id" SERIAL NOT NULL,
-    "employerId" INTEGER NOT NULL,
+    "companyId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "role" "JobRole" NOT NULL,
     "description" TEXT NOT NULL,
@@ -129,7 +151,7 @@ CREATE TABLE "Job" (
     "jobType" "JobType" NOT NULL,
     "salaryMin" DOUBLE PRECISION,
     "salaryMax" DOUBLE PRECISION,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "status" "JobStatus" NOT NULL DEFAULT 'ACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -143,7 +165,9 @@ CREATE TABLE "JobFormField" (
     "label" TEXT NOT NULL,
     "fieldType" "FieldType" NOT NULL,
     "isRequired" BOOLEAN NOT NULL DEFAULT true,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
     "order" INTEGER NOT NULL DEFAULT 0,
+    "options" TEXT[] DEFAULT ARRAY[]::TEXT[],
 
     CONSTRAINT "JobFormField_pkey" PRIMARY KEY ("id")
 );
@@ -180,16 +204,22 @@ CREATE UNIQUE INDEX "JobSeeker_userId_key" ON "JobSeeker"("userId");
 CREATE UNIQUE INDEX "Employer_userId_key" ON "Employer"("userId");
 
 -- CreateIndex
+CREATE INDEX "Company_employerId_idx" ON "Company"("employerId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Preferences_seekerId_key" ON "Preferences"("seekerId");
 
 -- CreateIndex
-CREATE INDEX "Job_employerId_idx" ON "Job"("employerId");
+CREATE INDEX "Job_companyId_idx" ON "Job"("companyId");
 
 -- CreateIndex
 CREATE INDEX "Job_role_idx" ON "Job"("role");
 
 -- CreateIndex
 CREATE INDEX "Job_jobType_idx" ON "Job"("jobType");
+
+-- CreateIndex
+CREATE INDEX "Job_status_idx" ON "Job"("status");
 
 -- CreateIndex
 CREATE INDEX "Job_createdAt_idx" ON "Job"("createdAt");
@@ -219,6 +249,9 @@ ALTER TABLE "JobSeeker" ADD CONSTRAINT "JobSeeker_userId_fkey" FOREIGN KEY ("use
 ALTER TABLE "Employer" ADD CONSTRAINT "Employer_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Company" ADD CONSTRAINT "Company_employerId_fkey" FOREIGN KEY ("employerId") REFERENCES "Employer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Education" ADD CONSTRAINT "Education_seekerId_fkey" FOREIGN KEY ("seekerId") REFERENCES "JobSeeker"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -231,7 +264,7 @@ ALTER TABLE "Project" ADD CONSTRAINT "Project_seekerId_fkey" FOREIGN KEY ("seeke
 ALTER TABLE "Preferences" ADD CONSTRAINT "Preferences_seekerId_fkey" FOREIGN KEY ("seekerId") REFERENCES "JobSeeker"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Job" ADD CONSTRAINT "Job_employerId_fkey" FOREIGN KEY ("employerId") REFERENCES "Employer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Job" ADD CONSTRAINT "Job_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "JobFormField" ADD CONSTRAINT "JobFormField_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;

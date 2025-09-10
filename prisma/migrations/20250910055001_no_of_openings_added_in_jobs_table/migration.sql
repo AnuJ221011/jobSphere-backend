@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Job" ADD COLUMN     "noOfOpenings" INTEGER NOT NULL DEFAULT 1;

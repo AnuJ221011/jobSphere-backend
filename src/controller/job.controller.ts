@@ -15,7 +15,8 @@ export const createJob = async (req: Request, res: Response): Promise<void> => {
       location,
       jobType,
       salaryMin,
-      salaryMax
+      salaryMax,
+      noOfOpenings
     } = req.body;
 
     if (!title || !role || !description || !jobType) {
@@ -36,6 +37,7 @@ export const createJob = async (req: Request, res: Response): Promise<void> => {
         jobType,
         salaryMin: salaryMin ? parseFloat(salaryMin) : null,
         salaryMax: salaryMax ? parseFloat(salaryMax) : null,
+        noOfOpenings: noOfOpenings ? parseInt(noOfOpenings) : 1,
         companyId: req.user!.companyId!,
         employerId: req.user!.employerId!
       },
@@ -94,7 +96,8 @@ export const updateJobDetails = async (req: Request, res: Response): Promise<voi
       location,
       jobType,
       salaryMin,
-      salaryMax
+      salaryMax,
+      noOfOpenings
     } = req.body;
 
     const job = await prisma.job.update({
@@ -108,6 +111,7 @@ export const updateJobDetails = async (req: Request, res: Response): Promise<voi
         ...(jobType && { jobType }),
         ...(salaryMin !== undefined && { salaryMin: salaryMin ? parseFloat(salaryMin) : null }),
         ...(salaryMax !== undefined && { salaryMax: salaryMax ? parseFloat(salaryMax) : null }),
+        ...(noOfOpenings !== undefined && { noOfOpenings: noOfOpenings ? parseInt(noOfOpenings) : 1 }),
         updatedAt: new Date()
       },
       include: {

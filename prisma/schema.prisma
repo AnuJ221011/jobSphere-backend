@@ -162,6 +162,7 @@ model Job {
   jobType      JobType
   salaryMin    Float?
   salaryMax    Float?
+  noOfOpenings Int         @default(1)
   status       JobStatus   @default(ACTIVE)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt

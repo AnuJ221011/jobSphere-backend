@@ -5,7 +5,8 @@ import authRouter from "./routes/auth.route.js";
 import cookieParser from "cookie-parser";
 import employerRouter from "./routes/employer.route.js";
 import companyRouter from "./routes/company.route.js";
-import JobRouter from "./routes/job.route.js";
+import jobRouter from "./routes/job.route.js";
+import jobseekerRouter from "./routes/jobseeker.route.js";
 
 
 
@@ -23,7 +24,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth',authRouter)
 app.use('/api/employer',employerRouter)
 app.use('/api/employer/companies',companyRouter)
-app.use('/api/jobs',JobRouter)
+app.use('/api/jobs',jobRouter)
+app.use('/api/jobseeker',jobseekerRouter)
 
 app.listen(PORT,()=>{
     console.log(`Server running on http://localhost:${PORT}`);

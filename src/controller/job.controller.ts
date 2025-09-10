@@ -827,14 +827,6 @@ const createDefaultJobFormFields = async (jobId: number) => {
       isRequired: true,
       isDefault: true,
       order: 5
-    },
-    {
-      jobId,
-      label: "Cover Letter",
-      fieldType: FieldType.TEXTAREA,
-      isRequired: false,
-      isDefault: true,
-      order: 6
     }
   ];
 

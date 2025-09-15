@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const prisma = new PrismaClient();
 
-// Validation schemas
+// Validation schemas 
 const updateUserBasicDetailsSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
   phone: z.string().min(10, "Phone must be at least 10 characters").max(15, "Phone must be less than 15 characters"),
@@ -984,6 +984,46 @@ export const checkProfileStatus = async (req: Request, res: Response): Promise<v
 
   } catch (error) {
     console.error("Check job seeker profile status error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+export const getAllCompanies = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required"
+      });
+      return;
+    }
+
+    const companies = await prisma.company.findMany({
+      select: {
+        id: true,
+        name: true,
+        industry: true,
+        location: true,
+        website: true,
+        profilePicture: true,
+        description: true
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Companies retrieved successfully",
+      data: companies
+    });
+
+  } catch (error) {
+    console.error("Get all companies error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error"

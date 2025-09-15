@@ -7,6 +7,9 @@ import employerRouter from "./routes/employer.route.js";
 import companyRouter from "./routes/company.route.js";
 import jobRouter from "./routes/job.route.js";
 import jobseekerRouter from "./routes/jobseeker.route.js";
+import applicationHistoryRouter from "./routes/applicationHistory.route.js";
+import jobForJobseekerRouter from "./routes/jobForJobseeker.route.js";
+import jobSeekerDashboardRouter from "./routes/jobSeekerDashboard.route.js";
 
 
 
@@ -26,6 +29,9 @@ app.use('/api/employer',employerRouter)
 app.use('/api/employer/companies',companyRouter)
 app.use('/api/jobs',jobRouter)
 app.use('/api/jobseeker',jobseekerRouter)
+app.use('/api/applications',applicationHistoryRouter)
+app.use('/api/jobseekers',jobForJobseekerRouter)
+app.use('/api/jobseeker/dashboard',jobSeekerDashboardRouter)
 
 app.listen(PORT,()=>{
     console.log(`Server running on http://localhost:${PORT}`);

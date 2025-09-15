@@ -20,7 +20,8 @@ import {
   deleteProject,
   updatePreferences,
   getPreferences,
-  checkProfileStatus
+  checkProfileStatus,
+  getAllCompanies
 } from "../controller/jobseeker.controller.js";
 
 const router = express.Router();
@@ -52,5 +53,10 @@ router.delete("/project/:projectId", authJobSeeker, requireCompleteProfile, dele
 // Preferences management
 router.put("/preferences", authJobSeeker, requireCompleteProfile, updatePreferences);
 router.get("/preferences", authJobSeeker, requireCompleteProfile, getPreferences);
+
+// Public routes
+router.get("/public/:id", getJobSeekerProfile);
+
+router.get('/companies',authJobSeeker,requireCompleteProfile,getAllCompanies);
 
 export default router;

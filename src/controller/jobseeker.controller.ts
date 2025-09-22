@@ -1009,17 +1009,32 @@ export const getAllCompanies = async (req: Request, res: Response): Promise<void
         location: true,
         website: true,
         profilePicture: true,
-        description: true
+        description: true,
+        jobs: {
+          where: {
+            status: "ACTIVE" // only active jobs
+          },
+          select: {
+            title: true
+          }
+        }
       },
       orderBy: {
         name: 'asc'
       }
     });
 
+    // Transform result to include active job count + titles
+    const formattedCompanies = companies.map(company => ({
+      ...company,
+      activeJobCount: company.jobs.length,
+      activeJobTitles: company.jobs.map(job => job.title)
+    }));
+
     res.status(200).json({
       success: true,
       message: "Companies retrieved successfully",
-      data: companies
+      data: formattedCompanies
     });
 
   } catch (error) {
@@ -1030,4 +1045,5 @@ export const getAllCompanies = async (req: Request, res: Response): Promise<void
     });
   }
 };
+
 

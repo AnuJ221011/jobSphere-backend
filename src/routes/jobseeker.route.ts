@@ -31,7 +31,7 @@ router.put("/basic-details", authJobSeeker, updateUserBasicDetails);
 router.get("/profile-status", authenticate, checkProfileStatus);
 
 // Job seeker profile management
-router.post("/profile", authJobSeeker, createJobSeekerProfile);
+router.post("/profile", authenticate, createJobSeekerProfile);
 router.put("/profile", authJobSeeker, requireCompleteProfile, updateJobSeekerProfile);
 router.get("/profile", authJobSeeker, getJobSeekerProfile);
 

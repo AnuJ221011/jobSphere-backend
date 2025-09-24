@@ -287,6 +287,7 @@ export const getJobsByEmployer = async (req: Request, res: Response): Promise<vo
   }
 };
 
+
 // Get job by ID
 export const getJobById = async (req: Request, res: Response): Promise<void> => {
   try {

@@ -15,6 +15,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       });
     }
 
+    //git status
     // Get current date for monthly calculations
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

@@ -190,19 +190,10 @@ export const deleteJob = async (req: Request, res: Response): Promise<void> => {
   try {
     const { jobId } = req.params;
 
-    // Check if job has applications
-    const applicationCount = await prisma.application.count({
+   
+    await prisma.application.deleteMany({
       where: { jobId: parseInt(jobId) }
-    });
-
-    if (applicationCount > 0) {
-      res.status(400).json({
-        success: false,
-        message: "Cannot delete job with existing applications. Consider marking it as COMPLETED instead."
-      });
-      return;
-    }
-
+    })
     await prisma.job.delete({
       where: { id: parseInt(jobId) }
     });

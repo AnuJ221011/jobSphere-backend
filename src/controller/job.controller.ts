@@ -224,7 +224,7 @@ export const deleteJob = async (req: Request, res: Response): Promise<void> => {
 // Get jobs by employer
 export const getJobsByEmployer = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { status, search, page = '1', limit = '10' } = req.query;
+    const { status, page = '1', limit = '10' } = req.query;
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
     const where: any = {
@@ -233,13 +233,6 @@ export const getJobsByEmployer = async (req: Request, res: Response): Promise<vo
 
     if (status && ['ACTIVE', 'COMPLETED', 'PAUSED'].includes(status as string)) {
       where.status = status;
-    }
-
-    if (search && typeof search === "string" && search.trim() !== "") {
-      where.OR = [
-        { title: { contains: search, mode: "insensitive" } },       // search in title
-        { description: { contains: search, mode: "insensitive" } }, // search in description
-      ];
     }
 
     const [jobs, total] = await Promise.all([
@@ -255,7 +248,10 @@ export const getJobsByEmployer = async (req: Request, res: Response): Promise<vo
             }
           },
           _count: {
-            select: { applications: true }
+            select: {
+              applications: true,
+              
+            }
           }
         },
         orderBy: { createdAt: 'desc' },

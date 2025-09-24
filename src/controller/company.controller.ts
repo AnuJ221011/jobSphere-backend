@@ -130,13 +130,13 @@ export const selectExistingCompany = async (req: Request, res: Response): Promis
       select: { companyId: true }
     });
 
-    if (currentEmployer?.companyId) {
-      res.status(409).json({
-        success: false,
-        message: "You are already associated with a company. Please contact support to change companies."
-      });
-      return;
-    }
+    // if (currentEmployer?.companyId) {
+    //   res.status(409).json({
+    //     success: false,
+    //     message: "You are already associated with a company. Please contact support to change companies."
+    //   });
+    //   return;
+    // }
 
     // Update employer's companyId
     const updatedEmployer = await prisma.employer.update({
@@ -194,13 +194,13 @@ export const createCompany = async (req: Request, res: Response): Promise<void> 
       select: { companyId: true }
     });
 
-    if (currentEmployer?.companyId) {
-      res.status(409).json({
-        success: false,
-        message: "You are already associated with a company. Please contact support to change companies."
-      });
-      return;
-    }
+    // if (currentEmployer?.companyId) {
+    //   res.status(409).json({
+    //     success: false,
+    //     message: "You are already associated with a company. Please contact support to change companies."
+    //   });
+    //   return;
+    // }
 
     // Validate request body
     const validation = createCompanySchema.safeParse(req.body);
@@ -554,29 +554,4 @@ export const getCompanyPublic = async (req: Request, res: Response): Promise<voi
   }
 };
 
-export const deleteMyCompany = async (req: Request, res: Response): Promise<void> => {
-  try{
-    const companyId = req.user?.companyId;
-    if (!companyId) {
-      res.status(400).json({
-        success: false,
-        message: "No company associated with the employer"
-      });
-      return;
-    }
-    const deletedCompany = await prisma.company.delete({
-      where: { id: companyId }
-    });
-    res.status(200).json({
-      success: true,
-      message: "Company deleted successfully",
-      data: deletedCompany
-    });
-  } catch (error) {
-    console.error("Delete company error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error"
-    });
-  }
-}
+

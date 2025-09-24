@@ -5,8 +5,7 @@ import {
   createCompany,
   getMyCompany,
   updateMyCompany,
-  getCompanyPublic,
-  deleteMyCompany
+  getCompanyPublic
 } from "../controller/company.controller.js";
 import { 
   authEmployer,
@@ -34,7 +33,5 @@ router.post("/", authEmployer, createCompany);
 
 // Update my company profile (requires company association)
 router.put("/", authEmployer, requireCompany, updateMyCompany);
-
-router.delete('/',authEmployer, requireCompany,deleteMyCompany);
 
 export default router;

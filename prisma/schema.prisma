@@ -228,7 +228,7 @@ enum JobType {
 model JobFormField {
   id          Int        @id @default(autoincrement())
   jobId       Int
-  label       String
+  label       String   @unique        //make unique
   fieldType   FieldType
   isRequired  Boolean     @default(true)
   isDefault   Boolean     @default(false) // Mark default fields

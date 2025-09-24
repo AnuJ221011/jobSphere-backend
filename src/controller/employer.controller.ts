@@ -422,6 +422,7 @@ export const updateEmployerProfile = async (req: Request, res: Response): Promis
         success: false,
         message: "Validation failed",
         errors: validation.error.issues
+        
       });
       return;
     }
